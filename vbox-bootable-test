@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Create working dir
+wdir=/tmp/vbox-bootable-test
+mkdir $wdir
+
+# Create raw disk image
+VBoxManage internalcommands createrawvmdk -filename $wdir/disk.vmdk -rawdisk $1
+
+# Creating vm
+VBoxManage createvm --name "Bootable test" --register
+
+# Attach sotrage
+VBoxManage storagectl "Bootable test" --name "SATA controller" --add sata --bootable on
+VBoxManage storageattach "Bootable test" --storagectl "SATA controller" --port 0 --device 0 --type hdd --medium $wdir/disk.vmdk
+
+# Starting VM
+VBoxManage startvm "Bootable test"
+
+echo "Press any key after vm shutdown"
+read
+
+# Removing VM
+VBoxManage unregistervm "Bootable test" --delete
+
+rm -rfd $wdir
